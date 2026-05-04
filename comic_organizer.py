@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import zipfile
 from helpers import get_input
 
 print("\n=== Comic Bundle Organizer v2 ===\n")
@@ -75,19 +74,31 @@ def extract_issue_number(filename):
     return match.group(1).zfill(2) if match else None
 
 def is_image_file(filename):
-    return filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))
+    return filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".webp"))
 
 def is_video_file(filename):
     return filename.lower().endswith((".mp4", ".mkv", ".avi"))
 
 def is_script_file(filename):
-    return filename.lower().endswith((".txt", ".docx", ".pdf"))
+    return filename.lower().endswith((".txt", ".docx"))
 
 def is_cover_file(filename):
     return "cover" in filename.lower()
 
+def get_unique_path(folder, filename):
+    base, ext = os.path.splitext(filename)
+    candidate = os.path.join(folder, filename)
+    counter = 1
+
+    while os.path.exists(candidate):
+        candidate = os.path.join(folder, f"{base}_DUPLICATE_{counter}{ext}")
+        counter += 1
+
+    return candidate
+
 def move_file(src, dst_folder, new_name=None):
-    dst_path = os.path.join(dst_folder, new_name if new_name else os.path.basename(src))
+    filename = new_name if new_name else os.path.basename(src)
+    dst_path = get_unique_path(dst_folder, filename)
 
     if dry_run:
         print(f"[DRY RUN] {os.path.basename(src)} -> {dst_path}")
@@ -101,31 +112,27 @@ def process_file(file_path):
     filename = os.path.basename(file_path)
     ext = os.path.splitext(filename)[1].lower()
 
-    # --- Images ---
-    if is_image_file(filename):
-        if is_cover_file(filename):
-            move_file(file_path, covers_folder)
-        else:
-            move_file(file_path, extras_folder)
-
-    # --- Videos ---
-    elif is_video_file(filename):
-        move_file(file_path, videos_folder)
-
-    # --- Scripts / Docs ---
-    elif is_script_file(filename):
-        move_file(file_path, scripts_folder)
-
-    # --- Comics ---
-    elif ext in [".cbz", ".cbr", ".pdf"]:
+    if ext in [".cbz", ".cbr", ".pdf"]:
         issue_num = extract_issue_number(filename)
+
         if issue_num:
             new_name = f"{series_name} - Issue {issue_num}{ext}"
             move_file(file_path, issues_folder, new_name)
         else:
             move_file(file_path, review_folder)
 
-    # --- Everything else ---
+    elif is_image_file(filename):
+        if is_cover_file(filename):
+            move_file(file_path, covers_folder)
+        else:
+            move_file(file_path, extras_folder)
+
+    elif is_video_file(filename):
+        move_file(file_path, videos_folder)
+
+    elif is_script_file(filename):
+        move_file(file_path, scripts_folder)
+
     else:
         move_file(file_path, extras_folder)
 
