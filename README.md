@@ -2,6 +2,10 @@
 
 
 
+⚠️ Always test on a copy of your files first.
+
+
+
 A Python automation tool that organizes digital comic bundles into a clean folder structure.
 
 
@@ -76,21 +80,21 @@ A Python automation tool that organizes digital comic bundles into a clean folde
 
 
 
-Issues  
+Issues
 
-Covers  
+Covers
 
-Manga  
+Manga
 
-Extras  
+Extras
 
-Photos  
+Photos
 
-Videos  
+Videos
 
-Scripts  
+Scripts
 
-Review  
+Review
 
 
 
